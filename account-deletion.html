@@ -524,347 +524,377 @@
         </footer>
     </div>
 
-    <!-- Supabase JS Client (v2) -->
+    <!-- Supabase JS Client (v2) UMD Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
     <script>
-        // =====================================================================
-        // YAPILANDIRMA: Yalnızca genel 'anon' (public) anahtarı kullanılır.
-        // service_role veya gizli yönetici anahtarları ASLA buraya yazılmaz!
-        // =====================================================================
-        const SUPABASE_URL = 'https://xkfuavirhjwjyckybhtd.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhrZnVhdmlyaGp3anlja3liaHRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIyNjQ4NTAsImV4cCI6MjEwNzg0MDg1MH0.gJMwRabjjHf7mfhcXL-BPCrxNdje22RQIN0EtCrKals';
-        // =====================================================================
+        (function() {
+            // =====================================================================
+            // YAPILANDIRMA: Yalnızca genel 'anon' (public) anahtarı kullanılır.
+            // service_role veya gizli yönetici anahtarları ASLA buraya yazılmaz!
+            // =====================================================================
+            var SUPABASE_URL = 'https://xkfuavirhjwjyckybhtd.supabase.co';
+            var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhrZnVhdmlyaGp3anlja3liaHRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIyNjQ4NTAsImV4cCI6MjEwNzg0MDg1MH0.gJMwRabjjHf7mfhcXL-BPCrxNdje22RQIN0EtCrKals';
+            // =====================================================================
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // State
-        let currentSession = null;
-        let resendCooldown = 0;
-        let cooldownTimer = null;
-        let lastRequestedEmail = '';
-
-        // DOM elements
-        const statusMessage = document.getElementById('statusMessage');
-        const verificationSection = document.getElementById('verificationSection');
-        const confirmSection = document.getElementById('confirmSection');
-        const confirmEmail = document.getElementById('confirmEmail');
-        const mainContent = document.getElementById('mainContent');
-        const successScreen = document.getElementById('successScreen');
-        const deleteButton = document.getElementById('deleteButton');
-        const cancelButton = document.getElementById('cancelButton');
-        const magicResendBox = document.getElementById('magicResendBox');
-        const magicResendLink = document.getElementById('magicResendLink');
-
-        function showStatus(message, type) {
-            statusMessage.textContent = message;
-            statusMessage.className = 'status-message ' + type;
-        }
-
-        function hideStatus() {
-            statusMessage.className = 'status-message';
-            statusMessage.textContent = '';
-        }
-
-        function setButtonLoading(button, loading, text) {
-            if (loading) {
-                button.disabled = true;
-                button.innerHTML = '<span class="spinner"></span> ' + text;
-            } else {
-                button.disabled = false;
-                button.textContent = text;
-            }
-        }
-
-        function switchTab(tab) {
-            hideStatus();
-            const tabMagic = document.getElementById('tabMagic');
-            const tabPassword = document.getElementById('tabPassword');
-            const magicSection = document.getElementById('magicSection');
-            const passwordSection = document.getElementById('passwordSection');
-
-            if (tab === 'magic') {
-                tabMagic.classList.add('active');
-                tabPassword.classList.remove('active');
-                magicSection.style.display = 'block';
-                passwordSection.style.display = 'none';
-            } else {
-                tabPassword.classList.add('active');
-                tabMagic.classList.remove('active');
-                magicSection.style.display = 'none';
-                passwordSection.style.display = 'block';
-            }
-        }
-
-        /**
-         * Sayfanın gerçek ve temiz yönlendirme adresini döndürür.
-         * (Parametreler ve hash parçaları temizlenir, gerçek sayfa adresi korunur).
-         */
-        function getCleanRedirectUrl() {
-            return window.location.href.split('?')[0].split('#')[0];
-        }
-
-        // --- YÖNTEM 1: E-posta Bağlantısı (Magic Link / ConfirmationURL) ---
-        async function handleSendMagicLink(event) {
-            if (event) event.preventDefault();
-            hideStatus();
-
-            const emailInput = document.getElementById('magicEmail');
-            const email = (emailInput.value || lastRequestedEmail).trim();
-
-            if (!email) {
-                showStatus('Lütfen e-posta adresinizi girin.', 'error');
+            // UMD kütüphanesinin yüklenip yüklenmediğini kontrol et
+            if (typeof window.supabase === 'undefined' || typeof window.supabase.createClient !== 'function') {
+                console.error('[KelimeDefterim] Supabase SDK kütüphanesi yüklenemedi.');
                 return;
             }
 
-            const btn = document.getElementById('sendMagicButton');
-            setButtonLoading(btn, true, 'Bağlantı Gönderiliyor...');
+            // UMD kütüphanesinin global 'supabase' adı ile çakışmaması için istemci değişkenini 'supabaseClient' olarak tanımlıyoruz
+            var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-            try {
-                const redirectUrl = getCleanRedirectUrl();
+            // Uygulama Durumu (State)
+            var currentSession = null;
+            var resendCooldown = 0;
+            var cooldownTimer = null;
+            var lastRequestedEmail = '';
 
-                const { error } = await supabase.auth.signInWithOtp({
-                    email,
-                    options: {
-                        shouldCreateUser: false, // Var olmayan hesap açılmasını engeller
-                        emailRedirectTo: redirectUrl,
-                    },
-                });
+            // DOM Elemanları
+            var statusMessage = document.getElementById('statusMessage');
+            var verificationSection = document.getElementById('verificationSection');
+            var confirmSection = document.getElementById('confirmSection');
+            var confirmEmail = document.getElementById('confirmEmail');
+            var mainContent = document.getElementById('mainContent');
+            var successScreen = document.getElementById('successScreen');
+            var deleteButton = document.getElementById('deleteButton');
+            var cancelButton = document.getElementById('cancelButton');
+            var magicResendBox = document.getElementById('magicResendBox');
+            var magicResendLink = document.getElementById('magicResendLink');
 
-                if (error) {
-                    let msg = error.message;
-                    if (error.message.includes('Signups not allowed for otp') || error.message.includes('User not found')) {
-                        msg = 'Bu e-posta adresiyle kayıtlı bir hesap bulunamadı.';
-                    } else if (error.message.includes('rate limit') || error.message.includes('over_email_send_rate_limit')) {
-                        msg = 'Çok fazla istek gönderildi. Lütfen biraz bekleyip tekrar deneyin.';
-                    }
-                    showStatus(msg, 'error');
-                    setButtonLoading(btn, false, 'Giriş ve Silme Bağlantısı Gönder');
+            function showStatus(message, type) {
+                if (!statusMessage) return;
+                statusMessage.textContent = message;
+                statusMessage.className = 'status-message ' + type;
+            }
+
+            function hideStatus() {
+                if (!statusMessage) return;
+                statusMessage.className = 'status-message';
+                statusMessage.textContent = '';
+            }
+
+            function setButtonLoading(button, loading, text) {
+                if (!button) return;
+                if (loading) {
+                    button.disabled = true;
+                    button.innerHTML = '<span class="spinner"></span> ' + text;
+                } else {
+                    button.disabled = false;
+                    button.textContent = text;
+                }
+            }
+
+            function switchTab(tab) {
+                hideStatus();
+                var tabMagic = document.getElementById('tabMagic');
+                var tabPassword = document.getElementById('tabPassword');
+                var magicSection = document.getElementById('magicSection');
+                var passwordSection = document.getElementById('passwordSection');
+
+                if (tab === 'magic') {
+                    if (tabMagic) tabMagic.classList.add('active');
+                    if (tabPassword) tabPassword.classList.remove('active');
+                    if (magicSection) magicSection.style.display = 'block';
+                    if (passwordSection) passwordSection.style.display = 'none';
+                } else {
+                    if (tabPassword) tabPassword.classList.add('active');
+                    if (tabMagic) tabMagic.classList.remove('active');
+                    if (magicSection) magicSection.style.display = 'none';
+                    if (passwordSection) passwordSection.style.display = 'block';
+                }
+            }
+
+            /**
+             * Sayfanın gerçek ve temiz yönlendirme adresini döndürür.
+             * Parametreler (?code=...) ve hash parçaları (#access_token=...) temizlenir.
+             */
+            function getCleanRedirectUrl() {
+                return window.location.href.split('?')[0].split('#')[0];
+            }
+
+            // --- YÖNTEM 1: E-posta Bağlantısı (Magic Link / ConfirmationURL) ---
+            async function handleSendMagicLink(event) {
+                if (event && event.preventDefault) event.preventDefault();
+                hideStatus();
+
+                var emailInput = document.getElementById('magicEmail');
+                var email = ((emailInput && emailInput.value) || lastRequestedEmail || '').trim();
+
+                if (!email) {
+                    showStatus('Lütfen e-posta adresinizi girin.', 'error');
                     return;
                 }
 
-                lastRequestedEmail = email;
-                showStatus(
-                    `✅ Doğrulama bağlantısı "${email}" adresine gönderildi. Lütfen gelen kutunuzu (ve gerekiyorsa spam klasörünü) kontrol ederek e-postadaki bağlantıya tıklayın. Bağlantıya tıkladığınızda bu sayfaya doğrulanmış olarak döneceksiniz.`,
-                    'info'
-                );
+                var btn = document.getElementById('sendMagicButton');
+                setButtonLoading(btn, true, 'Bağlantı Gönderiliyor...');
 
-                setButtonLoading(btn, false, 'Bağlantı Tekrar Gönder');
-                magicResendBox.style.display = 'block';
-                startResendCooldown();
-            } catch (err) {
-                showStatus('Bağlantı hatası oluştu. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.', 'error');
-                setButtonLoading(btn, false, 'Giriş ve Silme Bağlantısı Gönder');
-            }
-        }
-
-        function startResendCooldown() {
-            resendCooldown = 60;
-            magicResendLink.classList.add('disabled');
-            magicResendLink.textContent = `Tekrar göndermek için bekleyin (${resendCooldown}s)`;
-
-            if (cooldownTimer) clearInterval(cooldownTimer);
-            cooldownTimer = setInterval(() => {
-                resendCooldown--;
-                if (resendCooldown <= 0) {
-                    clearInterval(cooldownTimer);
-                    magicResendLink.classList.remove('disabled');
-                    magicResendLink.textContent = 'Yeni bağlantı gönder';
-                } else {
-                    magicResendLink.textContent = `Tekrar göndermek için bekleyin (${resendCooldown}s)`;
-                }
-            }, 1000);
-        }
-
-        function handleResendMagicLink() {
-            if (resendCooldown > 0) return;
-            handleSendMagicLink();
-        }
-
-        // --- YÖNTEM 2: Şifre ile Doğrulama ---
-        async function handlePasswordAuth(event) {
-            event.preventDefault();
-            hideStatus();
-
-            const email = document.getElementById('pwdEmail').value.trim();
-            const password = document.getElementById('pwdPassword').value;
-
-            if (!email || !password) {
-                showStatus('Lütfen e-posta adresinizi ve şifrenizi girin.', 'error');
-                return;
-            }
-
-            const btn = document.getElementById('pwdAuthButton');
-            setButtonLoading(btn, true, 'Doğrulanıyor...');
-
-            try {
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email,
-                    password,
-                });
-
-                if (error) {
-                    let msg = 'Giriş yapılamadı.';
-                    if (error.message.includes('Invalid login credentials')) {
-                        msg = 'E-posta veya şifre hatalı. Lütfen bilgilerinizi kontrol edin.';
-                    } else if (error.message.includes('Email not confirmed')) {
-                        msg = 'E-posta adresiniz henüz onaylanmamış.';
-                    } else if (error.message.includes('Too many requests')) {
-                        msg = 'Çok fazla başarısız deneme yapıldı. Lütfen biraz bekleyin.';
-                    } else {
-                        msg = error.message;
-                    }
-                    showStatus(msg, 'error');
-                    setButtonLoading(btn, false, 'Doğrula ve Devam Et');
-                    return;
-                }
-
-                currentSession = data.session;
-                showConfirmation(email);
-            } catch (err) {
-                showStatus('Bağlantı hatası oluştu. Lütfen tekrar deneyin.', 'error');
-                setButtonLoading(btn, false, 'Doğrula ve Devam Et');
-            }
-        }
-
-        // --- Onay Adımını Göster (Yalnızca doğrulanmış oturumla) ---
-        function showConfirmation(email) {
-            hideStatus();
-            verificationSection.style.display = 'none';
-            confirmEmail.textContent = email;
-            confirmSection.style.display = 'block';
-        }
-
-        function cancelDeletion() {
-            confirmSection.style.display = 'none';
-            verificationSection.style.display = 'block';
-            currentSession = null;
-            supabase.auth.signOut();
-            hideStatus();
-            document.getElementById('passwordForm').reset();
-            const pwdBtn = document.getElementById('pwdAuthButton');
-            pwdBtn.disabled = false;
-            pwdBtn.textContent = 'Doğrula ve Devam Et';
-        }
-
-        // --- ADIM 3: Hesabı Supabase Edge Function Üzerinden Sil ---
-        async function executeDeletion() {
-            if (!currentSession || !currentSession.access_token) {
-                showStatus('Oturum süresi dolmuş veya oturum bulunamadı. Lütfen tekrar doğrulama yapın.', 'error');
-                cancelDeletion();
-                return;
-            }
-
-            setButtonLoading(deleteButton, true, 'Hesap Siliniyor...');
-            cancelButton.disabled = true;
-            showStatus('Hesabınız ve tüm verileriniz sunucudan kalıcı olarak siliniyor, lütfen bekleyin...', 'info');
-
-            try {
-                // Yönetici yetkisi gerektiren silme işlemi SADECE sunucu tarafındaki Edge Function üzerinden yürütülür.
-                const response = await fetch(`${SUPABASE_URL}/functions/v1/delete-account`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${currentSession.access_token}`,
-                        'Content-Type': 'application/json',
-                    },
-                });
-
-                const result = await response.json().catch(() => null);
-
-                if (response.ok && result?.success) {
-                    // Yerel oturumu sonlandır
-                    await supabase.auth.signOut();
-                    currentSession = null;
-
-                    // Başarı ekranını aç
-                    mainContent.style.display = 'none';
-                    successScreen.style.display = 'block';
-                    hideStatus();
-                } else {
-                    let errMsg = result?.error || 'Hesap silinirken bir sunucu hatası oluştu.';
-                    if (response.status === 401) {
-                        errMsg = 'Oturum süresi dolmuş. Lütfen sayfayı yenileyip tekrar doğrulama yapın.';
-                        cancelDeletion();
-                    }
-                    showStatus(errMsg, 'error');
-                    setButtonLoading(deleteButton, false, 'Evet, Hesabımı Kalıcı Olarak Sil');
-                    cancelButton.disabled = false;
-                }
-            } catch (err) {
-                showStatus('Sunucuya ulaşılamadı. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.', 'error');
-                setButtonLoading(deleteButton, false, 'Evet, Hesabımı Kalıcı Olarak Sil');
-                cancelButton.disabled = false;
-            }
-        }
-
-        // --- Sayfa Yüklendiğinde Magic Link Yönlendirmesini ve Oturumu Algıla ---
-        async function initPage() {
-            // 1. URL'de hata parametresi var mı (link süresi dolmuş veya geçersiz)
-            const urlParams = new URLSearchParams(window.location.search);
-            const hashRaw = window.location.hash.startsWith('#') ? window.location.hash.substring(1) : window.location.hash;
-            const hashParams = new URLSearchParams(hashRaw);
-
-            const errorDesc = urlParams.get('error_description') || hashParams.get('error_description');
-            const errorCode = urlParams.get('error_code') || hashParams.get('error_code');
-
-            if (errorDesc || errorCode) {
-                showStatus('E-posta doğrulama bağlantısı geçersiz veya süresi dolmuş. Lütfen aşağıdan yeni bir bağlantı talep edin.', 'error');
-                window.history.replaceState({}, document.title, window.location.pathname);
-                return;
-            }
-
-            // 2. PKCE Akışı (?code=...) kontrolü
-            const code = urlParams.get('code');
-            if (code) {
-                showStatus('Doğrulama bağlantınız işleniyor, lütfen bekleyin...', 'info');
                 try {
-                    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-                    window.history.replaceState({}, document.title, window.location.pathname);
+                    var redirectUrl = getCleanRedirectUrl();
 
-                    if (error) {
-                        showStatus('Bağlantı süresi dolmuş veya geçersiz: ' + error.message, 'error');
+                    var result = await supabaseClient.auth.signInWithOtp({
+                        email: email,
+                        options: {
+                            shouldCreateUser: false, // Var olmayan hesap açılmasını engeller
+                            emailRedirectTo: redirectUrl,
+                        },
+                    });
+
+                    if (result.error) {
+                        var msg = result.error.message;
+                        if (msg.includes('Signups not allowed for otp') || msg.includes('User not found')) {
+                            msg = 'Bu e-posta adresiyle kayıtlı bir hesap bulunamadı.';
+                        } else if (msg.includes('rate limit') || msg.includes('over_email_send_rate_limit')) {
+                            msg = 'Çok fazla istek gönderildi. Lütfen biraz bekleyip tekrar deneyin.';
+                        }
+                        showStatus(msg, 'error');
+                        setButtonLoading(btn, false, 'Giriş ve Silme Bağlantısı Gönder');
                         return;
                     }
 
-                    if (data?.session?.user) {
-                        currentSession = data.session;
-                        showConfirmation(data.session.user.email);
+                    lastRequestedEmail = email;
+                    showStatus(
+                        '✅ Doğrulama bağlantısı "' + email + '" adresine gönderildi. Lütfen gelen kutunuzu (ve spam klasörünü) kontrol ederek e-postadaki bağlantıya tıklayın. Bağlantıya tıkladığınızda bu sayfaya doğrulanmış olarak döneceksiniz.',
+                        'info'
+                    );
+
+                    setButtonLoading(btn, false, 'Bağlantı Tekrar Gönder');
+                    if (magicResendBox) magicResendBox.style.display = 'block';
+                    startResendCooldown();
+                } catch (err) {
+                    showStatus('Bağlantı hatası oluştu. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.', 'error');
+                    setButtonLoading(btn, false, 'Giriş ve Silme Bağlantısı Gönder');
+                }
+            }
+
+            function startResendCooldown() {
+                resendCooldown = 60;
+                if (!magicResendLink) return;
+                magicResendLink.classList.add('disabled');
+                magicResendLink.textContent = 'Tekrar göndermek için bekleyin (' + resendCooldown + 's)';
+
+                if (cooldownTimer) clearInterval(cooldownTimer);
+                cooldownTimer = setInterval(function() {
+                    resendCooldown--;
+                    if (resendCooldown <= 0) {
+                        clearInterval(cooldownTimer);
+                        magicResendLink.classList.remove('disabled');
+                        magicResendLink.textContent = 'Yeni bağlantı gönder';
+                    } else {
+                        magicResendLink.textContent = 'Tekrar göndermek için bekleyin (' + resendCooldown + 's)';
+                    }
+                }, 1000);
+            }
+
+            function handleResendMagicLink() {
+                if (resendCooldown > 0) return;
+                handleSendMagicLink();
+            }
+
+            // --- YÖNTEM 2: Şifre ile Doğrulama ---
+            async function handlePasswordAuth(event) {
+                if (event && event.preventDefault) event.preventDefault();
+                hideStatus();
+
+                var emailInput = document.getElementById('pwdEmail');
+                var passInput = document.getElementById('pwdPassword');
+                var email = (emailInput && emailInput.value ? emailInput.value : '').trim();
+                var password = (passInput && passInput.value ? passInput.value : '');
+
+                if (!email || !password) {
+                    showStatus('Lütfen e-posta adresinizi ve şifrenizi girin.', 'error');
+                    return;
+                }
+
+                var btn = document.getElementById('pwdAuthButton');
+                setButtonLoading(btn, true, 'Doğrulanıyor...');
+
+                try {
+                    var authRes = await supabaseClient.auth.signInWithPassword({
+                        email: email,
+                        password: password,
+                    });
+
+                    if (authRes.error) {
+                        var msg = 'Giriş yapılamadı.';
+                        if (authRes.error.message.includes('Invalid login credentials')) {
+                            msg = 'E-posta veya şifre hatalı. Lütfen bilgilerinizi kontrol edin.';
+                        } else if (authRes.error.message.includes('Email not confirmed')) {
+                            msg = 'E-posta adresiniz henüz onaylanmamış.';
+                        } else if (authRes.error.message.includes('Too many requests')) {
+                            msg = 'Çok fazla başarısız deneme yapıldı. Lütfen biraz bekleyin.';
+                        } else {
+                            msg = authRes.error.message;
+                        }
+                        showStatus(msg, 'error');
+                        setButtonLoading(btn, false, 'Doğrula ve Devam Et');
+                        return;
+                    }
+
+                    currentSession = authRes.data.session;
+                    showConfirmation(email);
+                } catch (err) {
+                    showStatus('Bağlantı hatası oluştu. Lütfen tekrar deneyin.', 'error');
+                    setButtonLoading(btn, false, 'Doğrula ve Devam Et');
+                }
+            }
+
+            // --- Onay Adımını Göster (Yalnızca doğrulanmış oturumla) ---
+            function showConfirmation(email) {
+                hideStatus();
+                if (verificationSection) verificationSection.style.display = 'none';
+                if (confirmEmail) confirmEmail.textContent = email;
+                if (confirmSection) confirmSection.style.display = 'block';
+            }
+
+            function cancelDeletion() {
+                if (confirmSection) confirmSection.style.display = 'none';
+                if (verificationSection) verificationSection.style.display = 'block';
+                currentSession = null;
+                supabaseClient.auth.signOut();
+                hideStatus();
+                var pwdForm = document.getElementById('passwordForm');
+                if (pwdForm) pwdForm.reset();
+                var pwdBtn = document.getElementById('pwdAuthButton');
+                if (pwdBtn) {
+                    pwdBtn.disabled = false;
+                    pwdBtn.textContent = 'Doğrula ve Devam Et';
+                }
+            }
+
+            // --- ADIM 3: Hesabı Supabase Edge Function Üzerinden Sil ---
+            async function executeDeletion() {
+                if (!currentSession || !currentSession.access_token) {
+                    showStatus('Oturum süresi dolmuş veya oturum bulunamadı. Lütfen tekrar doğrulama yapın.', 'error');
+                    cancelDeletion();
+                    return;
+                }
+
+                setButtonLoading(deleteButton, true, 'Hesap Siliniyor...');
+                if (cancelButton) cancelButton.disabled = true;
+                showStatus('Hesabınız ve tüm verileriniz sunucudan kalıcı olarak siliniyor, lütfen bekleyin...', 'info');
+
+                try {
+                    // Yönetici yetkisi gerektiren silme işlemi SADECE sunucu tarafındaki Edge Function üzerinden yürütülür.
+                    var response = await fetch(SUPABASE_URL + '/functions/v1/delete-account', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + currentSession.access_token,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+
+                    var result = await response.json().catch(function() { return null; });
+
+                    if (response.ok && result && result.success) {
+                        // Yerel oturumu sonlandır
+                        await supabaseClient.auth.signOut();
+                        currentSession = null;
+
+                        // Başarı ekranını aç
+                        if (mainContent) mainContent.style.display = 'none';
+                        if (successScreen) successScreen.style.display = 'block';
+                        hideStatus();
+                    } else {
+                        var errMsg = (result && result.error) || 'Hesap silinirken bir sunucu hatası oluştu.';
+                        if (response.status === 401) {
+                            errMsg = 'Oturum süresi dolmuş. Lütfen sayfayı yenileyip tekrar doğrulama yapın.';
+                            cancelDeletion();
+                        }
+                        showStatus(errMsg, 'error');
+                        setButtonLoading(deleteButton, false, 'Evet, Hesabımı Kalıcı Olarak Sil');
+                        if (cancelButton) cancelButton.disabled = false;
+                    }
+                } catch (err) {
+                    showStatus('Sunucuya ulaşılamadı. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.', 'error');
+                    setButtonLoading(deleteButton, false, 'Evet, Hesabımı Kalıcı Olarak Sil');
+                    if (cancelButton) cancelButton.disabled = false;
+                }
+            }
+
+            // --- Sayfa Yüklendiğinde Magic Link Yönlendirmesini ve Oturumu Algıla ---
+            async function initPage() {
+                // 1. URL'de hata parametresi var mı (link süresi dolmuş veya geçersiz)
+                var urlParams = new URLSearchParams(window.location.search);
+                var hashRaw = window.location.hash.startsWith('#') ? window.location.hash.substring(1) : window.location.hash;
+                var hashParams = new URLSearchParams(hashRaw);
+
+                var errorDesc = urlParams.get('error_description') || hashParams.get('error_description');
+                var errorCode = urlParams.get('error_code') || hashParams.get('error_code');
+
+                if (errorDesc || errorCode) {
+                    showStatus('E-posta doğrulama bağlantısı geçersiz veya süresi dolmuş. Lütfen aşağıdan yeni bir bağlantı talep edin.', 'error');
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    return;
+                }
+
+                // 2. PKCE Akışı (?code=...) kontrolü
+                var code = urlParams.get('code');
+                if (code) {
+                    showStatus('Doğrulama bağlantınız işleniyor, lütfen bekleyin...', 'info');
+                    try {
+                        var exchangeRes = await supabaseClient.auth.exchangeCodeForSession(code);
+                        window.history.replaceState({}, document.title, window.location.pathname);
+
+                        if (exchangeRes.error) {
+                            showStatus('Bağlantı süresi dolmuş veya geçersiz: ' + exchangeRes.error.message, 'error');
+                            return;
+                        }
+
+                        if (exchangeRes.data && exchangeRes.data.session && exchangeRes.data.session.user) {
+                            currentSession = exchangeRes.data.session;
+                            showConfirmation(exchangeRes.data.session.user.email);
+                            return;
+                        }
+                    } catch (err) {
+                        showStatus('Oturum doğrulanırken hata oluştu. Lütfen tekrar deneyin.', 'error');
+                        return;
+                    }
+                }
+
+                // 3. Hash tabanlı oturum (#access_token=...) veya mevcut kayıtlı oturum kontrolü
+                try {
+                    var sessionRes = await supabaseClient.auth.getSession();
+                    if (sessionRes.data && sessionRes.data.session && sessionRes.data.session.user) {
+                        currentSession = sessionRes.data.session;
+                        if (window.location.hash) {
+                            window.history.replaceState({}, document.title, window.location.pathname);
+                        }
+                        showConfirmation(sessionRes.data.session.user.email);
                         return;
                     }
                 } catch (err) {
-                    showStatus('Oturum doğrulanırken hata oluştu. Lütfen tekrar deneyin.', 'error');
-                    return;
+                    console.warn('[KelimeDefterim] Oturum yükleme uyarısı:', err);
                 }
-            }
 
-            // 3. Hash tabanlı oturum (#access_token=...) veya mevcut kayıtlı oturum kontrolü
-            try {
-                const { data: { session }, error } = await supabase.auth.getSession();
-                if (session && session.user) {
-                    currentSession = session;
-                    if (window.location.hash) {
-                        window.history.replaceState({}, document.title, window.location.pathname);
+                // 4. Supabase Oturum Değişikliği Dinleyicisi
+                supabaseClient.auth.onAuthStateChange(function(event, session) {
+                    if (event === 'SIGNED_IN' && session && session.user) {
+                        currentSession = session;
+                        showConfirmation(session.user.email);
+                    } else if (event === 'SIGNED_OUT') {
+                        currentSession = null;
                     }
-                    showConfirmation(session.user.email);
-                    return;
-                }
-            } catch (err) {
-                console.warn('Oturum yükleme uyarısı:', err);
+                });
             }
 
-            // 4. Supabase Oturum Değişikliği Dinleyicisi
-            supabase.auth.onAuthStateChange((event, session) => {
-                if (event === 'SIGNED_IN' && session?.user) {
-                    currentSession = session;
-                    showConfirmation(session.user.email);
-                } else if (event === 'SIGNED_OUT') {
-                    currentSession = null;
-                }
-            });
-        }
+            // HTML inline çağrıları için fonksiyonları window nesnesine dışa aç
+            window.switchTab = switchTab;
+            window.handleSendMagicLink = handleSendMagicLink;
+            window.handleResendMagicLink = handleResendMagicLink;
+            window.handlePasswordAuth = handlePasswordAuth;
+            window.cancelDeletion = cancelDeletion;
+            window.executeDeletion = executeDeletion;
 
-        // Sayfa açıldığında başlat
-        window.addEventListener('DOMContentLoaded', initPage);
+            // Sayfa yüklendiğinde oturumu kontrol et
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initPage);
+            } else {
+                initPage();
+            }
+        })();
     </script>
 </body>
 </html>
