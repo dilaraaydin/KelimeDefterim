@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hesap ve Veri Silme - Kelime Defterim</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #F8FAFC;
+            color: #0F172A;
+            line-height: 1.6;
+            font-size: 15px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 540px;
+            margin: 0 auto;
+            padding: 32px 20px 60px;
+        }
+
+        header {
+            text-align: center;
+            padding-bottom: 24px;
+            border-bottom: 2px solid #E2E8F0;
+            margin-bottom: 28px;
+        }
+
+        .app-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #4F46E5, #6366F1);
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 14px;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+        }
+
+        .app-icon svg {
+            width: 34px;
+            height: 34px;
+            fill: #fff;
+        }
+
+        header h1 {
+            font-size: 22px;
+            font-weight: 800;
+            color: #0F172A;
+            margin-bottom: 4px;
+        }
+
+        header p {
+            font-size: 13px;
+            color: #64748B;
+        }
+
+        .warning-box {
+            background-color: #FEF2F2;
+            border: 1px solid #FECACA;
+            border-left: 4px solid #EF4444;
+            padding: 14px 18px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 22px;
+        }
+
+        .warning-box h3 {
+            color: #B91C1C;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .warning-box ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        .warning-box li {
+            color: #991B1B;
+            font-size: 13px;
+            margin-bottom: 3px;
+        }
+
+        .tab-group {
+            display: flex;
+            background-color: #F1F5F9;
+            padding: 4px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            gap: 4px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px 12px;
+            border: none;
+            background: transparent;
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748B;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background-color: #FFFFFF;
+            color: #4F46E5;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .form-section {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+        }
+
+        .form-section h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1E293B;
+            margin-bottom: 6px;
+        }
+
+        .form-description {
+            font-size: 13px;
+            color: #64748B;
+            margin-bottom: 18px;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            color: #0F172A;
+            background: #F8FAFC;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #4F46E5;
+            background: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background-color 0.2s, opacity 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #4F46E5;
+            color: #FFFFFF;
+        }
+        .btn-primary:hover {
+            background-color: #4338CA;
+        }
+
+        .btn-danger {
+            background-color: #DC2626;
+            color: #FFFFFF;
+        }
+        .btn-danger:hover {
+            background-color: #B91C1C;
+        }
+
+        .btn-secondary {
+            background-color: #F1F5F9;
+            color: #475569;
+        }
+        .btn-secondary:hover {
+            background-color: #E2E8F0;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 18px;
+            display: none;
+            line-height: 1.5;
+        }
+        .status-message.error {
+            background-color: #FEF2F2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+            display: block;
+        }
+        .status-message.success {
+            background-color: #ECFDF5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+            display: block;
+        }
+        .status-message.info {
+            background-color: #EFF6FF;
+            color: #1E40AF;
+            border: 1px solid #BFDBFE;
+            display: block;
+        }
+
+        .confirm-section {
+            display: none;
+            background: #FFFFFF;
+            border: 2px solid #FCA5A5;
+            border-radius: 14px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .confirm-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 28px;
+            background: #FEE2E2;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 14px;
+        }
+        .confirm-icon svg {
+            width: 28px;
+            height: 28px;
+            fill: #DC2626;
+        }
+
+        .confirm-section h2 {
+            font-size: 17px;
+            font-weight: 800;
+            color: #991B1B;
+            margin-bottom: 10px;
+        }
+
+        .confirm-section p {
+            font-size: 13px;
+            color: #475569;
+            margin-bottom: 18px;
+            line-height: 1.5;
+        }
+
+        .confirm-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .success-screen {
+            display: none;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 14px;
+            padding: 36px 24px;
+            text-align: center;
+        }
+
+        .check-icon {
+            width: 64px;
+            height: 64px;
+            background: #DCFCE7;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 18px;
+        }
+        .check-icon svg {
+            width: 32px;
+            height: 32px;
+            fill: #16A34A;
+        }
+
+        .success-screen h2 {
+            font-size: 19px;
+            font-weight: 800;
+            color: #15803D;
+            margin-bottom: 8px;
+        }
+
+        .success-screen p {
+            font-size: 14px;
+            color: #4B5563;
+            margin-bottom: 6px;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 12px;
+            color: #94A3B8;
+            margin-top: 36px;
+            padding-top: 20px;
+            border-top: 1px solid #E2E8F0;
+        }
+
+        footer a {
+            color: #4F46E5;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-top-color: #FFFFFF;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .resend-box {
+            margin-top: 14px;
+            text-align: center;
+            font-size: 12px;
+            color: #64748B;
+        }
+
+        .resend-link {
+            color: #4F46E5;
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .resend-link.disabled {
+            color: #94A3B8;
+            cursor: not-allowed;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="app-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/>
+                </svg>
+            </div>
+            <h1>Kelime Defterim</h1>
+            <p>Hesap ve İlişkili Veri Silme Talebi</p>
+        </header>
+
+        <div id="mainContent">
+            <div class="warning-box">
+                <h3>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                    </svg>
+                    Kalıcı Silme Uyarısı
+                </h3>
+                <ul>
+                    <li>Kaydettiğiniz tüm İngilizce kelimeler, Türkçe anlamları ve kişisel notlarınız kalıcı olarak silinir.</li>
+                    <li>Kullanıcı profiliniz ve oturum bilgileriniz silinir.</li>
+                    <li>Supabase Auth hesabınız sistemden tamamen kaldırılır.</li>
+                    <li>Bu işlem geri alınamaz ve silinen veriler geri yüklenemez.</li>
+                </ul>
+            </div>
+
+            <!-- Status message -->
+            <div id="statusMessage" class="status-message"></div>
+
+            <!-- Step 1: Verification Form -->
+            <div id="verificationSection" class="form-section">
+                <h2>1. E-posta Sahipliğini Doğrulayın</h2>
+                <p class="form-description">
+                    Hesabınızı güvenceye almak ve başkalarının hesabınızı silememesini sağlamak için lütfen e-posta sahipliğinizi doğrulayın.
+                </p>
+
+                <!-- Tabs -->
+                <div class="tab-group">
+                    <button type="button" id="tabMagic" class="tab-btn active" onclick="switchTab('magic')">
+                        E-posta Bağlantısı (Magic Link)
+                    </button>
+                    <button type="button" id="tabPassword" class="tab-btn" onclick="switchTab('password')">
+                        Şifre ile Doğrula
+                    </button>
+                </div>
+
+                <!-- Tab 1: Magic Link Form (Supabase Default Template Compatible) -->
+                <div id="magicSection">
+                    <form id="magicForm" onsubmit="handleSendMagicLink(event)">
+                        <div class="form-group">
+                            <label for="magicEmail">Kayıtlı E-posta Adresi</label>
+                            <input
+                                type="email"
+                                id="magicEmail"
+                                placeholder="ornek@email.com"
+                                required
+                                autocomplete="email"
+                            />
+                        </div>
+                        <button type="submit" id="sendMagicButton" class="btn btn-primary">
+                            Giriş ve Silme Bağlantısı Gönder
+                        </button>
+                    </form>
+                    <div id="magicResendBox" class="resend-box" style="display: none;">
+                        <span>E-posta ulaşmadı mı? </span>
+                        <span id="magicResendLink" class="resend-link disabled" onclick="handleResendMagicLink()">
+                            Tekrar göndermek için bekleyin (60s)
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Password Form -->
+                <div id="passwordSection" style="display: none;">
+                    <form id="passwordForm" onsubmit="handlePasswordAuth(event)">
+                        <div class="form-group">
+                            <label for="pwdEmail">Kayıtlı E-posta Adresi</label>
+                            <input
+                                type="email"
+                                id="pwdEmail"
+                                placeholder="ornek@email.com"
+                                required
+                                autocomplete="email"
+                            />
+                        </div>
+                        <div class="form-group">
+                            <label for="pwdPassword">Hesap Şifresi</label>
+                            <input
+                                type="password"
+                                id="pwdPassword"
+                                placeholder="Şifrenizi girin"
+                                required
+                                autocomplete="current-password"
+                            />
+                        </div>
+                        <button type="submit" id="pwdAuthButton" class="btn btn-primary">
+                            Doğrula ve Devam Et
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Step 2: Confirmation Step (Shown ONLY when verified session exists) -->
+            <div id="confirmSection" class="confirm-section">
+                <div class="confirm-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                    </svg>
+                </div>
+                <h2>Hesabınızı Silmek İstediğinize Emin Misiniz?</h2>
+                <p>
+                    <strong id="confirmEmail"></strong> adresine ait hesap, kayıtlı tüm kelimeler ve profil bilgileri kalıcı olarak silinecektir.
+                </p>
+                <div class="confirm-actions">
+                    <button id="cancelButton" class="btn btn-secondary" onclick="cancelDeletion()">
+                        Vazgeç
+                    </button>
+                    <button id="deleteButton" class="btn btn-danger" onclick="executeDeletion()">
+                        Evet, Hesabımı Kalıcı Olarak Sil
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Success screen -->
+        <div id="successScreen" class="success-screen">
+            <div class="check-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                </svg>
+            </div>
+            <h2>Hesabınız Başarıyla Silindi</h2>
+            <p>Hesabınız ve tüm verileriniz sunucularımızdan tamamen silinmiştir.</p>
+            <p style="margin-top: 14px; font-size: 13px; color: #64748B;">Kelime Defterim'i kullandığınız için teşekkür ederiz.</p>
+        </div>
+
+        <footer>
+            <p><a href="privacy-policy.html">Gizlilik Politikası</a> &bull; Kelime Defterim</p>
+            <p style="margin-top: 6px;">Google Play Hesap Silme Politikası Uyumlu</p>
+        </footer>
+    </div>
+
+    <!-- Supabase JS Client (v2) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+    <script>
+        // =====================================================================
+        // YAPILANDIRMA: Yalnızca genel 'anon' (public) anahtarı kullanılır.
+        // service_role veya gizli yönetici anahtarları ASLA buraya yazılmaz!
+        // =====================================================================
+        const SUPABASE_URL = 'https://xkfuavirhjwjyckybhtd.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhrZnVhdmlyaGp3anlja3liaHRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIyNjQ4NTAsImV4cCI6MjEwNzg0MDg1MH0.gJMwRabjjHf7mfhcXL-BPCrxNdje22RQIN0EtCrKals';
+        // =====================================================================
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // State
+        let currentSession = null;
+        let resendCooldown = 0;
+        let cooldownTimer = null;
+        let lastRequestedEmail = '';
+
+        // DOM elements
+        const statusMessage = document.getElementById('statusMessage');
+        const verificationSection = document.getElementById('verificationSection');
+        const confirmSection = document.getElementById('confirmSection');
+        const confirmEmail = document.getElementById('confirmEmail');
+        const mainContent = document.getElementById('mainContent');
+        const successScreen = document.getElementById('successScreen');
+        const deleteButton = document.getElementById('deleteButton');
+        const cancelButton = document.getElementById('cancelButton');
+        const magicResendBox = document.getElementById('magicResendBox');
+        const magicResendLink = document.getElementById('magicResendLink');
+
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = 'status-message ' + type;
+        }
+
+        function hideStatus() {
+            statusMessage.className = 'status-message';
+            statusMessage.textContent = '';
+        }
+
+        function setButtonLoading(button, loading, text) {
+            if (loading) {
+                button.disabled = true;
+                button.innerHTML = '<span class="spinner"></span> ' + text;
+            } else {
+                button.disabled = false;
+                button.textContent = text;
+            }
+        }
+
+        function switchTab(tab) {
+            hideStatus();
+            const tabMagic = document.getElementById('tabMagic');
+            const tabPassword = document.getElementById('tabPassword');
+            const magicSection = document.getElementById('magicSection');
+            const passwordSection = document.getElementById('passwordSection');
+
+            if (tab === 'magic') {
+                tabMagic.classList.add('active');
+                tabPassword.classList.remove('active');
+                magicSection.style.display = 'block';
+                passwordSection.style.display = 'none';
+            } else {
+                tabPassword.classList.add('active');
+                tabMagic.classList.remove('active');
+                magicSection.style.display = 'none';
+                passwordSection.style.display = 'block';
+            }
+        }
+
+        /**
+         * Sayfanın gerçek ve temiz yönlendirme adresini döndürür.
+         * (Parametreler ve hash parçaları temizlenir, gerçek sayfa adresi korunur).
+         */
+        function getCleanRedirectUrl() {
+            return window.location.href.split('?')[0].split('#')[0];
+        }
+
+        // --- YÖNTEM 1: E-posta Bağlantısı (Magic Link / ConfirmationURL) ---
+        async function handleSendMagicLink(event) {
+            if (event) event.preventDefault();
+            hideStatus();
+
+            const emailInput = document.getElementById('magicEmail');
+            const email = (emailInput.value || lastRequestedEmail).trim();
+
+            if (!email) {
+                showStatus('Lütfen e-posta adresinizi girin.', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('sendMagicButton');
+            setButtonLoading(btn, true, 'Bağlantı Gönderiliyor...');
+
+            try {
+                const redirectUrl = getCleanRedirectUrl();
+
+                const { error } = await supabase.auth.signInWithOtp({
+                    email,
+                    options: {
+                        shouldCreateUser: false, // Var olmayan hesap açılmasını engeller
+                        emailRedirectTo: redirectUrl,
+                    },
+                });
+
+                if (error) {
+                    let msg = error.message;
+                    if (error.message.includes('Signups not allowed for otp') || error.message.includes('User not found')) {
+                        msg = 'Bu e-posta adresiyle kayıtlı bir hesap bulunamadı.';
+                    } else if (error.message.includes('rate limit') || error.message.includes('over_email_send_rate_limit')) {
+                        msg = 'Çok fazla istek gönderildi. Lütfen biraz bekleyip tekrar deneyin.';
+                    }
+                    showStatus(msg, 'error');
+                    setButtonLoading(btn, false, 'Giriş ve Silme Bağlantısı Gönder');
+                    return;
+                }
+
+                lastRequestedEmail = email;
+                showStatus(
+                    `✅ Doğrulama bağlantısı "${email}" adresine gönderildi. Lütfen gelen kutunuzu (ve gerekiyorsa spam klasörünü) kontrol ederek e-postadaki bağlantıya tıklayın. Bağlantıya tıkladığınızda bu sayfaya doğrulanmış olarak döneceksiniz.`,
+                    'info'
+                );
+
+                setButtonLoading(btn, false, 'Bağlantı Tekrar Gönder');
+                magicResendBox.style.display = 'block';
+                startResendCooldown();
+            } catch (err) {
+                showStatus('Bağlantı hatası oluştu. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.', 'error');
+                setButtonLoading(btn, false, 'Giriş ve Silme Bağlantısı Gönder');
+            }
+        }
+
+        function startResendCooldown() {
+            resendCooldown = 60;
+            magicResendLink.classList.add('disabled');
+            magicResendLink.textContent = `Tekrar göndermek için bekleyin (${resendCooldown}s)`;
+
+            if (cooldownTimer) clearInterval(cooldownTimer);
+            cooldownTimer = setInterval(() => {
+                resendCooldown--;
+                if (resendCooldown <= 0) {
+                    clearInterval(cooldownTimer);
+                    magicResendLink.classList.remove('disabled');
+                    magicResendLink.textContent = 'Yeni bağlantı gönder';
+                } else {
+                    magicResendLink.textContent = `Tekrar göndermek için bekleyin (${resendCooldown}s)`;
+                }
+            }, 1000);
+        }
+
+        function handleResendMagicLink() {
+            if (resendCooldown > 0) return;
+            handleSendMagicLink();
+        }
+
+        // --- YÖNTEM 2: Şifre ile Doğrulama ---
+        async function handlePasswordAuth(event) {
+            event.preventDefault();
+            hideStatus();
+
+            const email = document.getElementById('pwdEmail').value.trim();
+            const password = document.getElementById('pwdPassword').value;
+
+            if (!email || !password) {
+                showStatus('Lütfen e-posta adresinizi ve şifrenizi girin.', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('pwdAuthButton');
+            setButtonLoading(btn, true, 'Doğrulanıyor...');
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password,
+                });
+
+                if (error) {
+                    let msg = 'Giriş yapılamadı.';
+                    if (error.message.includes('Invalid login credentials')) {
+                        msg = 'E-posta veya şifre hatalı. Lütfen bilgilerinizi kontrol edin.';
+                    } else if (error.message.includes('Email not confirmed')) {
+                        msg = 'E-posta adresiniz henüz onaylanmamış.';
+                    } else if (error.message.includes('Too many requests')) {
+                        msg = 'Çok fazla başarısız deneme yapıldı. Lütfen biraz bekleyin.';
+                    } else {
+                        msg = error.message;
+                    }
+                    showStatus(msg, 'error');
+                    setButtonLoading(btn, false, 'Doğrula ve Devam Et');
+                    return;
+                }
+
+                currentSession = data.session;
+                showConfirmation(email);
+            } catch (err) {
+                showStatus('Bağlantı hatası oluştu. Lütfen tekrar deneyin.', 'error');
+                setButtonLoading(btn, false, 'Doğrula ve Devam Et');
+            }
+        }
+
+        // --- Onay Adımını Göster (Yalnızca doğrulanmış oturumla) ---
+        function showConfirmation(email) {
+            hideStatus();
+            verificationSection.style.display = 'none';
+            confirmEmail.textContent = email;
+            confirmSection.style.display = 'block';
+        }
+
+        function cancelDeletion() {
+            confirmSection.style.display = 'none';
+            verificationSection.style.display = 'block';
+            currentSession = null;
+            supabase.auth.signOut();
+            hideStatus();
+            document.getElementById('passwordForm').reset();
+            const pwdBtn = document.getElementById('pwdAuthButton');
+            pwdBtn.disabled = false;
+            pwdBtn.textContent = 'Doğrula ve Devam Et';
+        }
+
+        // --- ADIM 3: Hesabı Supabase Edge Function Üzerinden Sil ---
+        async function executeDeletion() {
+            if (!currentSession || !currentSession.access_token) {
+                showStatus('Oturum süresi dolmuş veya oturum bulunamadı. Lütfen tekrar doğrulama yapın.', 'error');
+                cancelDeletion();
+                return;
+            }
+
+            setButtonLoading(deleteButton, true, 'Hesap Siliniyor...');
+            cancelButton.disabled = true;
+            showStatus('Hesabınız ve tüm verileriniz sunucudan kalıcı olarak siliniyor, lütfen bekleyin...', 'info');
+
+            try {
+                // Yönetici yetkisi gerektiren silme işlemi SADECE sunucu tarafındaki Edge Function üzerinden yürütülür.
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/delete-account`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentSession.access_token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                const result = await response.json().catch(() => null);
+
+                if (response.ok && result?.success) {
+                    // Yerel oturumu sonlandır
+                    await supabase.auth.signOut();
+                    currentSession = null;
+
+                    // Başarı ekranını aç
+                    mainContent.style.display = 'none';
+                    successScreen.style.display = 'block';
+                    hideStatus();
+                } else {
+                    let errMsg = result?.error || 'Hesap silinirken bir sunucu hatası oluştu.';
+                    if (response.status === 401) {
+                        errMsg = 'Oturum süresi dolmuş. Lütfen sayfayı yenileyip tekrar doğrulama yapın.';
+                        cancelDeletion();
+                    }
+                    showStatus(errMsg, 'error');
+                    setButtonLoading(deleteButton, false, 'Evet, Hesabımı Kalıcı Olarak Sil');
+                    cancelButton.disabled = false;
+                }
+            } catch (err) {
+                showStatus('Sunucuya ulaşılamadı. Lütfen internet bağlantınızı kontrol edip tekrar deneyin.', 'error');
+                setButtonLoading(deleteButton, false, 'Evet, Hesabımı Kalıcı Olarak Sil');
+                cancelButton.disabled = false;
+            }
+        }
+
+        // --- Sayfa Yüklendiğinde Magic Link Yönlendirmesini ve Oturumu Algıla ---
+        async function initPage() {
+            // 1. URL'de hata parametresi var mı (link süresi dolmuş veya geçersiz)
+            const urlParams = new URLSearchParams(window.location.search);
+            const hashRaw = window.location.hash.startsWith('#') ? window.location.hash.substring(1) : window.location.hash;
+            const hashParams = new URLSearchParams(hashRaw);
+
+            const errorDesc = urlParams.get('error_description') || hashParams.get('error_description');
+            const errorCode = urlParams.get('error_code') || hashParams.get('error_code');
+
+            if (errorDesc || errorCode) {
+                showStatus('E-posta doğrulama bağlantısı geçersiz veya süresi dolmuş. Lütfen aşağıdan yeni bir bağlantı talep edin.', 'error');
+                window.history.replaceState({}, document.title, window.location.pathname);
+                return;
+            }
+
+            // 2. PKCE Akışı (?code=...) kontrolü
+            const code = urlParams.get('code');
+            if (code) {
+                showStatus('Doğrulama bağlantınız işleniyor, lütfen bekleyin...', 'info');
+                try {
+                    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+                    window.history.replaceState({}, document.title, window.location.pathname);
+
+                    if (error) {
+                        showStatus('Bağlantı süresi dolmuş veya geçersiz: ' + error.message, 'error');
+                        return;
+                    }
+
+                    if (data?.session?.user) {
+                        currentSession = data.session;
+                        showConfirmation(data.session.user.email);
+                        return;
+                    }
+                } catch (err) {
+                    showStatus('Oturum doğrulanırken hata oluştu. Lütfen tekrar deneyin.', 'error');
+                    return;
+                }
+            }
+
+            // 3. Hash tabanlı oturum (#access_token=...) veya mevcut kayıtlı oturum kontrolü
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (session && session.user) {
+                    currentSession = session;
+                    if (window.location.hash) {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+                    showConfirmation(session.user.email);
+                    return;
+                }
+            } catch (err) {
+                console.warn('Oturum yükleme uyarısı:', err);
+            }
+
+            // 4. Supabase Oturum Değişikliği Dinleyicisi
+            supabase.auth.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_IN' && session?.user) {
+                    currentSession = session;
+                    showConfirmation(session.user.email);
+                } else if (event === 'SIGNED_OUT') {
+                    currentSession = null;
+                }
+            });
+        }
+
+        // Sayfa açıldığında başlat
+        window.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html>
